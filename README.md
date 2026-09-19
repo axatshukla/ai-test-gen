@@ -1,6 +1,6 @@
 # AI-Powered Test Case Generator & Quality Benchmarking Engine
 
-[![CI Quality Gate](https://github.com/your-username/testgen/actions/workflows/ci.yml/badge.svg)](https://github.com/your-username/testgen/actions)
+[![CI Quality Gate](https://github.com/axatshukla/ai-test-gen/actions/workflows/ci.yml/badge.svg)](https://github.com/axatshukla/ai-test-gen/actions)
 [![Python 3.11 | 3.12](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue.svg)](https://www.python.org/)
 [![Tests](https://img.shields.io/badge/tests-32%2F32%20passing-brightgreen.svg)]()
 [![Code Quality Gate](https://img.shields.io/badge/quality%20gate-enforced-success.svg)]()
@@ -115,7 +115,7 @@ Planted Bug Detection Rate by Generation Mode:
 ### 1. Installation
 
 ```bash
-git clone https://github.com/your-username/testgen.git
+git clone https://github.com/axatshukla/ai-test-gen.git
 cd testgen
 
 # Create virtual environment
