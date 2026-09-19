@@ -30,7 +30,7 @@ def _make_store() -> Store:
 def generate(
     input: str = typer.Option(..., help=".py file to generate tests for (code mode)."),
     function: Optional[str] = typer.Option(None, help="Only generate for this function."),
-    backend: str = typer.Option(cfg.backend, help="LLM backend: openai | vllm | fake"),
+    backend: str = typer.Option(cfg.backend, help="LLM backend: openai | openrouter | vllm | fake"),
     model: str = typer.Option(cfg.model),
     temperature: float = typer.Option(cfg.temperature),
     target_coverage: float = typer.Option(cfg.target_coverage),
@@ -41,6 +41,8 @@ def generate(
 ):
     """Generate a pytest suite from a .py file."""
     cfg.ensure_dirs()
+    if backend == "openrouter" and model == "gpt-4o-mini":
+        model = "deepseek/deepseek-v4-flash-0731:free"
     client = get_client(backend, model, cache_dir=cfg.cache_dir)
     store = _make_store() if not no_store else None
     specs = extract_functions(input, function)
@@ -115,10 +117,18 @@ def testplan(
         err.print("[red]Provide --spec TEXT or --spec-file PATH[/red]"); raise typer.Exit(4)
     spec_text = spec if spec else Path(spec_file).read_text(encoding="utf-8")
     cfg.ensure_dirs()
+    if backend == "openrouter" and model == "gpt-4o-mini":
+        model = "deepseek/deepseek-v4-flash-0731:free"
     client = get_client(backend, model, cache_dir=cfg.cache_dir)
     resp = client.generate(build_test_plan_prompt(spec_text), temperature=0.2)
+    raw_text = resp.text.strip()
+    if "```" in raw_text:
+        import re
+        m = re.search(r"```(?:json)?\s*([\s\S]*?)\s*```", raw_text)
+        if m:
+            raw_text = m.group(1).strip()
     try:
-        rows_raw = json.loads(resp.text)
+        rows_raw = json.loads(raw_text)
     except json.JSONDecodeError:
         err.print(f"[red]Model did not return valid JSON[/red]"); raise typer.Exit(1)
     rows = [TestPlanRow(**r) for r in rows_raw]

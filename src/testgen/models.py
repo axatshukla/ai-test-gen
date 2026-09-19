@@ -1,7 +1,7 @@
 """Central Pydantic data models. Defined first so every later module is guided by types."""
 from __future__ import annotations
 from typing import Literal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, field_validator, Field
 import time
 
 
@@ -104,6 +104,26 @@ class TestPlanRow(BaseModel):
     steps: str
     expected_result: str
     priority: Literal["P0", "P1", "P2"]
+
+    @field_validator("steps", mode="before")
+    @classmethod
+    def normalize_steps(cls, v):
+        if isinstance(v, list):
+            return " -> ".join(str(s) for s in v)
+        return str(v)
+
+    @field_validator("priority", mode="before")
+    @classmethod
+    def normalize_priority(cls, v):
+        s = str(v).strip().upper()
+        return s if s in ("P0", "P1", "P2") else "P1"
+
+    @field_validator("category", mode="before")
+    @classmethod
+    def normalize_category(cls, v):
+        s = str(v).strip().lower()
+        valid = {"functional", "boundary", "negative", "security", "performance", "concurrency"}
+        return s if s in valid else "functional"
 
 
 class TestPlan(BaseModel):

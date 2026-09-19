@@ -39,10 +39,12 @@ class OpenAIClient(LLMClient):
         if not self._cache_dir:
             return None
         p = self._cache_dir / f"{key}.txt"
-        return p.read_text(encoding="utf-8") if p.exists() else None
+        if not p.exists() or p.stat().st_size == 0:
+            return None
+        return p.read_text(encoding="utf-8")
 
     def _cache_put(self, key: str, text: str) -> None:
-        if self._cache_dir:
+        if self._cache_dir and text and text.strip():
             (self._cache_dir / f"{key}.txt").write_text(text, encoding="utf-8")
 
     def generate(self, messages: list[dict], temperature: float = 0.2, max_tokens: int = 2048) -> LLMResponse:
