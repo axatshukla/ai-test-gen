@@ -22,3 +22,6 @@ tests/test_*.py.bak
 # OS
 .DS_Store
 Thumbs.db
+
+walkthrough.md
+tests/test_*.py
