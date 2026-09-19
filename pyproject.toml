@@ -1,0 +1,49 @@
+[project]
+name = "testgen"
+version = "0.1.0"
+description = "AI-powered test generation with execution, repair, and mutation-based quality evaluation"
+requires-python = ">=3.11"
+dependencies = [
+    "typer>=0.12",
+    "rich>=13.7",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "openai>=1.40",
+    "pytest>=8.2",
+    "pytest-json-report>=1.5",
+    "coverage>=7.5",
+    "matplotlib>=3.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest-cov", "ruff", "mypy"]
+hf  = ["huggingface_hub>=0.20"]
+
+[project.scripts]
+testgen = "testgen.cli:app"
+
+[tool.testgen]
+backend          = "openai"
+model            = "gpt-4o-mini"
+temperature      = 0.2
+max_iterations   = 3
+target_coverage  = 0.80
+db_path          = ".testgen/results.db"
+cache_dir        = ".testgen/cache"
+prompt_version   = "v3"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[build-system]
+requires      = ["setuptools>=68.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+strict         = false
+ignore_missing_imports = true
