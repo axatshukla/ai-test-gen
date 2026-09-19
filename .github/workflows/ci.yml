@@ -1,4 +1,4 @@
-name: CI
+name: CI Quality Gate & Test Pipeline
 
 on:
   push:
@@ -8,19 +8,39 @@ on:
 
 jobs:
   test:
+    name: Test & Gate (${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: ${{ matrix.python-version }}
+          cache: "pip"
 
-      - name: Install dependencies
-        run: pip install -e ".[dev]"
+      - name: Install package and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
 
-      - name: Run unit and offline pipeline tests
+      - name: Run Core Test Suite (32 tests)
         run: pytest tests/ -v --tb=short
 
-      - name: Check tool imports correctly
-        run: python -c "import testgen; print('Import OK')"
+      - name: Run Hand-written Golden Benchmark Tests
+        run: |
+          export PYTHONPATH=.
+          pytest benchmark/golden/ -v --tb=short
+
+      - name: End-to-End Offline Generation Pipeline (Fake Client)
+        run: testgen generate --input benchmark/functions/string_ops.py --function slugify --backend fake
+
+      - name: End-to-End Offline Benchmark Run
+        run: testgen bench --backend fake --limit 2 --no-charts
+
+      - name: Enforce CI Quality Gate
+        run: testgen gate --min-coverage 0.05 --min-mutation-score 0.50

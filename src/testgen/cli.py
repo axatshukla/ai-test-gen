@@ -181,3 +181,39 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+@app.command()
+def bench(
+    functions_dir: str = typer.Option("benchmark/functions", help="Directory containing benchmark functions."),
+    buggy_dir: str = typer.Option("benchmark/buggy", help="Directory containing buggy variants."),
+    backend: str = typer.Option(cfg.backend, help="LLM backend: openai | openrouter | vllm | fake"),
+    model: str = typer.Option(cfg.model),
+    temperature: float = typer.Option(cfg.temperature),
+    target_coverage: float = typer.Option(cfg.target_coverage),
+    max_iters: int = typer.Option(2),
+    run_mutation: bool = typer.Option(True, help="Compute mutation score for generated suites."),
+    out_dir: Optional[str] = typer.Option(None, help="Directory to save benchmark results and charts."),
+    charts: bool = typer.Option(True, help="Generate Matplotlib comparison charts."),
+    limit: Optional[int] = typer.Option(None, help="Limit number of functions to benchmark."),
+):
+    """Run code-mode vs spec-mode benchmark to demonstrate white-box contamination."""
+    from testgen.benchmark import run_benchmark
+    cfg.ensure_dirs()
+    if backend == "openrouter" and model == "gpt-4o-mini":
+        model = "deepseek/deepseek-v4-flash-0731:free"
+
+    out_path = Path(out_dir) if out_dir else Path(cfg.results_dir) / "benchmark"
+    run_benchmark(
+        functions_dir=Path(functions_dir),
+        buggy_dir=Path(buggy_dir),
+        backend=backend,
+        model=model,
+        temperature=temperature,
+        target_coverage=target_coverage,
+        max_iters=max_iters,
+        run_mutation=run_mutation,
+        out_dir=out_path,
+        make_charts=charts,
+        limit=limit,
+    )
