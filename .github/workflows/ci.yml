@@ -37,7 +37,7 @@ jobs:
           pytest benchmark/golden/ -v --tb=short
 
       - name: End-to-End Offline Generation Pipeline (Fake Client)
-        run: testgen generate --input benchmark/functions/string_ops.py --function slugify --backend fake
+        run: testgen generate --input benchmark/functions/string_ops.py --function slugify --backend fake --target-coverage 0.60
 
       - name: End-to-End Offline Benchmark Run
         run: testgen bench --backend fake --limit 2 --no-charts
